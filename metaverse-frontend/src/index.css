@@ -1,0 +1,456 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Roboto";
+  src: url("../public/fonts/Roboto-Regular.ttf");
+}
+
+@font-face {
+  font-family: "Pacifico";
+  src: url("../public/fonts/Pacifico-Regular.ttf");
+}
+
+@font-face {
+  font-family: "Petemoss";
+  src: url("../public/fonts/Petemoss-Regular.ttf");
+}
+@font-face {
+  font-family: "Geist";
+  src: url("../public/fonts/Geist-Regular.ttf");
+}
+@font-face {
+  font-family: "Geist-SemiBold";
+  src: url("../public/fonts/Geist-Thin.ttf");
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.ant-upload-wrapper.ant-upload-picture-card-wrapper>.ant-upload.ant-upload-select{
+  width: 320px ;
+  height: 192px ;
+  background-color: white;
+  border-style: solid; 
+  border-width: 2px;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  border-color: #f2f0e9;
+}
+
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  /* --background-color: #0b0b0e; */
+  --text-color: #ffffff;
+  --gamba-ui-primary-color: #9564ff;
+
+  --gamba-ui-border-radius: 10px;
+
+  --gamba-ui-button-default-background: #0e0e16;
+  --gamba-ui-button-default-background-hover: #11111d;
+  --gamba-ui-button-default-color: white;
+
+  --gamba-ui-button-main-background: #8851ff;
+  --gamba-ui-button-main-color: white;
+  --gamba-ui-button-main-background-hover: #9564ff;
+
+  --gamba-ui-input-background: #0e0e16;
+  --gamba-ui-input-color: #ffffff;
+  --gamba-ui-input-background-hover: #11111d;
+}
+
+body,
+input,
+button,
+textarea,
+pre {
+  font-family: 'DM Sans', 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+}
+
+h1,
+h2 {
+  margin: 0;
+}
+
+body {
+  background: var(--background-color);
+  color: var(--text-color);
+  cursor: default;
+  margin: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+body::-webkit-scrollbar {
+  width: 4px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: var(--gamba-ui-primary-color);
+}
+
+.wallet-adapter-button.wallet-adapter-button-trigger {
+  height: 40px;
+  line-height: 40px;
+  font-weight: normal;
+  background: rgb(55, 57, 82);
+  border-radius: 10px;
+}
+
+.app {
+  padding: 0;
+  inset: 0;
+}
+
+.app .connect {
+  color: rgb(255, 47, 5);
+  font-size: 34px;
+  border: 1px solid rgb(104, 237, 255);
+  background-color: rgb(255, 253, 208);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 10px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* position: absolute;
+top: 40%;
+left: 45%; */
+}
+
+.app .connect:hover {
+  background-color: rgb(255, 253, 208);
+  color: blue;
+  cursor: pointer;
+}
+
+.toppart {
+  background-color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  min-height: 68px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  position: relative;
+  box-shadow: 0 2px 8px 0 #0000001a;
+}
+
+.modalcontainer {
+  font-family: "Geist";
+  width: 387px;
+  height: 590px;
+  color: #141618;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  /* right: 30px; */
+  font-size: 16px;
+  box-shadow: 0 1px 2px 2px #0000001a;
+  background-color: #ffffff;
+  position: absolute;
+  top: 0;
+  z-index: 1001;
+}
+
+&.invisible {
+  display: none;
+}
+
+.category {
+  width: 171.42px;
+  height: 32px;
+  display: flex;
+  justify-content: space-between;
+  background-color: #0000001a;
+  align-items: center;
+  gap: 8px;
+  padding-left: 8px;
+  padding-right: 16px;
+  border-radius: 9999px;
+  border: none;
+}
+
+.icon {
+  width: 14px;
+  height: 14px;
+}
+
+.icon img {
+  width: 14px;
+  height: 14px;
+  max-width: 14px;
+  align-items: center;
+}
+
+.defaultcategory {
+  font-family: "Euclid Circular B", "Roboto", sans-serif;
+  font-weight: 400;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  letter-spacing: 0;
+}
+
+.defaultcategory:hover {
+  cursor: pointer;
+  ;
+}
+
+.downicon {
+  font-size: 12px;
+  width: 1em;
+  height: 1em;
+  max-width: 1em;
+  flex: 0 0 1em;
+  display: inline-block;
+  margin-left: auto;
+}
+
+.logo {
+  background-color: transparent;
+  border-style: none;
+  cursor: pointer;
+  height: 38px;
+  width: 46px;
+}
+
+.logo img {
+  height: 32px;
+  width: 34px;
+}
+
+#mainpart {
+  background-color: white;
+}
+
+.loading {
+  position: absolute;
+  top: 0;
+  z-index: 1001;
+  right: 0;
+  /* background-color: #f2f4f6; */
+  width: 100%;
+  height: 590px;
+  box-shadow: 0 1px 4px 2px #0000001a;
+}
+
+.maincontainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 387px;
+  padding: 20px;
+  margin-top: 25px;
+  font-weight: 400;
+  z-index: 1001;
+}
+
+/*-------logo container-------*/
+#logo-container {
+  margin-top: 24px;
+  position: relative;
+}
+
+#logo-container svg {
+  width: 120px;
+  height: 120px
+}
+
+.maincontainer h1 {
+  /* font-family: "Euclid Circular B", "Roboto", sans-serif; */
+  font-family: "Geist-SemiBold";
+  font-weight: 500;
+  font-size: 2.0rem;
+  line-height: 2rem;
+  letter-spacing: 0;
+  margin-top: 10px;
+  margin-bottom: 0px;
+}
+
+.maincontainer p {
+  margin: 0;
+  padding: 0;
+  font-family: "Euclid Circular B", Helvetica, Arial, sans-serif;
+  ;
+  font-size: 16px;
+}
+
+form {
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 50px;
+}
+
+.form-group {
+  position: relative;
+  &+.form-group {
+    margin-top: 30px;
+  }
+}
+
+.form-label {
+  position: absolute;
+  left: 5px;
+  top: 10px;
+  color: #6a737d;
+  background-color: #fff;
+  transition: transform 150ms ease-out, font-size 150ms ease-out;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  z-index: 1010;
+}
+
+.movelabel  {
+  /* transform: translateY(-120%);
+  font-size: .75em; */
+}
+
+.form-input {
+  position: relative;
+  /* padding: 15px 0px 5px 0; */
+  padding:10px;
+  background-color: white;
+  color: black;
+  width: 100%;
+  /* border-color: #888989; */
+  border-width: 0.1px;
+  border-radius: 8px;
+  /* box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.87); */
+  /* outline: auto; */
+  /* inline-size: auto; */
+  /* transition: box-shadow 150ms ease-out; */
+}
+
+form-input::placeholder {
+  margin-left: 2px
+
+}
+
+.form-input:focus {
+  /* box-shadow: 0 2px 0 0 #0376c9; */
+}
+
+.form-input.filled {
+  /* box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.87); */
+}
+
+.form p {
+  font-size: 0.75rem;
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: normal;
+  color: #ca3542;
+  line-height: 140%;
+  letter-spacing: 0.03333em;
+}
+
+.forgot a:hover {
+  color: #026064;
+}
+
+.unlocksubmit {
+  background-color: #89898a;
+  color: white;
+  margin-top: 10px;
+  width: 100%;
+  height: 50px;
+  font-weight: 595;
+  box-shadow: none;
+  border-radius: 10px;
+  /* border: 1px solid #141618; */
+  font-size: 1.0rem;
+  font-family: "Geist";
+}
+.entered {
+  cursor: pointer;
+  background-color: black;
+}
+
+.forgot {
+  font-family: "Euclid Circular B", Helvetica, Arial, sans-serif;
+  margin-top: 15px;
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  font-style: normal;
+  padding: 0.75rem 1rem;
+}
+
+.forgot a {
+  cursor: pointer;
+  /* background-color: transparent; */
+  line-height: 140%;
+  font-size: 1.0rem;
+  font-family: "Geist";
+}
+
+.help {
+  font-family: "Geist";
+  margin-top: 25px;
+  font-size: 1.0rem;
+}
+
+.help span a {
+  color: #0376c9;
+  text-decoration: none;
+}
+
+.help span a:hover {
+  color: #026064;
+}
+
+/*--------loading--------*/
+.loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 387px;
+  padding: 30px;
+  background-color: white;
+  z-index: 1002;
+}
+
+.loading-logo {
+  width: 160px;
+  height: 160px;
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 8rem;
+}
+
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  margin: auto;
+  margin-top: 1rem;
+}
