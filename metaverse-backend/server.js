@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cookieSession({
     name: "bezkoder-session",
-    // keys: ["COOKIE_SECRET"], // should use as secret environment variable
+    keys: ["COOKIE_SECRET"], // should use as secret environment variable
     httpOnly: true,
     sameSite: "strict",
   })
@@ -57,7 +57,7 @@ require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 
 // set port, listen for requests
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
