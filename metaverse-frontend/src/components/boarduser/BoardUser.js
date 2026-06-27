@@ -22,9 +22,14 @@ const BoardUser = () => {
 
   useEffect(() => {
     const user = AuthService.getCurrentUser();
-    let info = "";
     let uniqueFileNames = [];
     let uniqueWebNames = [];
+    if (!user?.email) {
+      setDocInfo([]);
+      setWebInfo([]);
+      return;
+    }
+
     DocService.getDocInfo(user.email).then((response) => {
       console.log("response", response);
       response.data.message.forEach((item) => {

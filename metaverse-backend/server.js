@@ -35,12 +35,12 @@ app.use(
 );
 
 // database
-// const db = require("./app/models");
-// const Role = db.role;
+const db = require("./app/models");
+const Role = db.role;
 
-// db.sequelize.sync({ alter: true }).then(() => {
-//   initial();
-// });
+db.sequelize.sync({ alter: true }).then(() => {
+  initial();
+});
 // force: true will drop the table if it already exists
 // db.sequelize.sync({force: true}).then(() => {
 //   console.log('Drop and Resync Database with { force: true }');

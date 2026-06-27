@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/login";
 import RegisterPage from "./pages/register";
 import HomePage from "./pages/home";
@@ -9,6 +9,15 @@ import BoardAdminPage from "./pages/admin";
 import ForgotPage from "./pages/forgot";
 import ResetPage from "./pages/reset";
 import "./App.css";
+
+const WalletRoute = ({ children }) => {
+  const walletAddress = localStorage.getItem("walletAddress");
+  if (!walletAddress) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return children;
+};
 
 function App() {
   return (
@@ -25,7 +34,14 @@ function App() {
           element={<ResetPage />}
         />
         <Route exact path="/profile" element={<ProfilePage />} />
-        <Route path="/user" element={<BoardUserPage />} />
+        <Route
+          path="/user"
+          element={
+            <WalletRoute>
+              <BoardUserPage />
+            </WalletRoute>
+          }
+        />
         {/* <Route path="/mod" element={<BoardModeratorPage />} /> */}
         <Route path="/admin" element={<BoardAdminPage />} />
       </Routes>
