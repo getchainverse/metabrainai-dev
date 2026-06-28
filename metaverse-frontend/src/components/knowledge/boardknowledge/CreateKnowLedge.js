@@ -22,8 +22,8 @@ const CreateKnowLedge = ({
   const [checkAll, setCheckAll] = useState(false);
   const [checkedRoles, setCheckedRoles] = useState(["sales"]);
   const CheckboxGroup = Checkbox.Group;
-  const plainOptions = ["Level1", "Sales", "Manager", "VP"];
-  const roles = { Level1: "level", Sales: "sales", Manager: "admin", VP: "vp" };
+  const plainOptions = ["Level 1", "Sales", "Manager", "V.P"];
+  const roles = { "Level 1": "level", "Sales": "sales", "Manager": "admin", "V.P": "vp" };
 
   const onChangePermisson = (list) => {
     setCheckedList(list);

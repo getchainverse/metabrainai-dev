@@ -1,12 +1,10 @@
 import BoardUser from "../../components/boarduser/BoardUser";
-import Header from "../../components/Header";
-const UserPage = () => {
-  return (
-    <>
-      <Header />
-      <BoardUser />
-    </>
-  );
-};
+import AppLayout from "../../components/layout/AppLayout";
+
+const UserPage = () => (
+  <AppLayout>
+    <BoardUser />
+  </AppLayout>
+);
 
 export default UserPage;

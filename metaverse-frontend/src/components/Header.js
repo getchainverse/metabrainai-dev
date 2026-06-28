@@ -1,122 +1,133 @@
-import React, { useState, useEffect } from "react";
-import { Menu } from "antd";
+import React, { useMemo, useState } from "react";
 import NavItem from "./common/NavItem";
-import AuthService from "../services/auth.service";
 import ButtonItem from "./common/ButtonItem";
-import metamask from "../assets/MetaMask-icon-fox.svg";
-import '../ph.css'
+import useAuth from "../hooks/useAuth";
+import useMetaMask from "../hooks/useMetaMask";
+
 const Header = () => {
-  const [currentUser, setCurrentUser] = useState();
-  const [showAdminBoard, setShowAdminBoard] = useState(false);
-  const [walletAddress, setWalletAddress] = useState("");
-  const [walletError, setWalletError] = useState("");
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { walletAddress, formattedAddress, error: walletError, connect } = useMetaMask();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const savedWallet = localStorage.getItem("walletAddress");
-    if (savedWallet) {
-      setWalletAddress(savedWallet);
-    }
-  }, []);
+  const showWalletNav = isAuthenticated || Boolean(walletAddress);
+  const showAdmin = isAdmin;
 
-  const logOut = () => {
-    AuthService.logout();
-    setCurrentUser(undefined);
-    localStorage.removeItem("walletAddress");
-    setWalletAddress("");
+  const navLinks = useMemo(
+    () => [
+      { to: "/home", title: "Home", show: true },
+      { to: "/admin", title: "Admin", show: showAdmin },
+      { to: "/store", title: "Store", show: true },
+      { to: "/social", title: "Social", show: true },
+      { to: "/user", title: "Chatbot", show: true },
+      { to: "/profile", title: user?.username || "Profile", show: isAuthenticated },
+    ],
+    [showAdmin, isAuthenticated, user?.username]
+  );
+
+  const handleLogout = (event) => {
+    event.preventDefault();
+    logout();
+    setMenuOpen(false);
   };
-
-  const connectWallet = async () => {
-    setWalletError("");
-
-    if (!window.ethereum) {
-      setWalletError("MetaMask is not installed.");
-      return;
-    }
-
-    try {
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-
-      if (accounts && accounts.length > 0) {
-        setWalletAddress(accounts[0]);
-        localStorage.setItem("walletAddress", accounts[0]);
-      }
-    } catch (error) {
-      setWalletError(error?.message || "Wallet connection failed.");
-    }
-  };
-
-  useEffect(() => {
-    const user = AuthService.getCurrentUser();
-    if (user) {
-      setCurrentUser(user);
-      setShowAdminBoard(user.roles.includes("ROLE_ADMIN"));
-    }
-    console.log("user", user);
-  }, []);
-
 
   return (
-    <>
-      <Menu className="h-[70px] px-16 border-2 drop-shadow-lg">
-        {currentUser ? (
-          <>
-            <div className="float-left mt-3">
-              <img
-                src="./MetasphereswithTagLine.png"
-                style={{ width: 60, height: 45 }}
-              />
-            </div>
-            <div className="float-right flex">
-              <NavItem to="/home" title="Home" />
-              {/* <NavItem to="/mod" title="Moderator Board" /> */}
-              {(showAdminBoard || walletAddress) && (
-                <NavItem to="/admin" title="Knowledge Base" />
-              )}
-              {walletAddress && <NavItem to="/user" title="Chatbot" />}
-              <li className="my-5 ml-24 block text-lg font-normal hover:font-bold hover:text-back-red md:inline-block">
-                <a href="/login" onClick={logOut}>
-                  LogOut
-                </a>
-              </li>
-              <NavItem to="/profile" title={currentUser.username} />
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="float-left mt-3">
-              <img
-                src="./MetasphereswithTagLine.png"
-                style={{ width: 60, height: 45 }}
-              />
-            </div>
-            <div className="float-right flex">
-              <NavItem
-                to="/login"
-                title="Login"
-                addClass="border-2 text-center"
-              />
+    <header className="relative border-b-2 border-slate-200 bg-white text-slate-800 shadow-md">
+      <div className="mx-auto flex h-[70px] max-w-7xl items-center justify-between px-4 sm:px-8">
+        <a href="/home" className="flex-shrink-0">
+          <img src="./MetasphereswithTagLine.png" alt="MetaBrain" className="h-11 w-auto" />
+        </a>
+
+        <nav className="hidden items-center gap-1 md:flex">
+          {navLinks
+            .filter((link) => link.show)
+            .map((link) => (
+              <NavItem key={link.to} to={link.to} title={link.title} />
+            ))}
+          {isAuthenticated ? (
+            <>
               <ButtonItem
                 buttonName={walletAddress ? "Connected" : "Connect"}
-                addClass="bg-white text-center ml-8 w-32 m-auto"
-                onClick={connectWallet}
+                addClass="bg-white text-center ml-4 w-32"
+                onClick={connect}
                 disabled={!!walletAddress}
               />
-              {walletAddress && <NavItem to="/user" title="Chatbot" />}
+              <a
+                href="/login"
+                onClick={handleLogout}
+                className="ml-4 text-lg hover:font-bold hover:text-red-500"
+              >
+                LogOut
+              </a>
+            </>
+          ) : (
+            <>
+              <NavItem to="/login" title="Login" addClass="border-2 text-center ml-2" />
+              <NavItem to="/register" title="Sign Up" addClass="border-2 text-center ml-2" />
+              <ButtonItem
+                buttonName={walletAddress ? "Connected" : "Connect"}
+                addClass="bg-white text-center ml-4 w-32"
+                onClick={connect}
+                disabled={!!walletAddress}
+              />
+            </>
+          )}
+        </nav>
+
+        <button
+          type="button"
+          className="rounded-md border px-3 py-2 text-sm md:hidden"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-label="Toggle menu"
+        >
+          Menu
+        </button>
+      </div>
+
+      {menuOpen && (
+        <nav className="border-t bg-white px-4 py-3 md:hidden">
+          <div className="flex flex-col gap-2">
+            {navLinks
+              .filter((link) => link.show)
+              .map((link) => (
+                <NavItem
+                  key={link.to}
+                  to={link.to}
+                  title={link.title}
+                  onClick={() => setMenuOpen(false)}
+                />
+              ))}
+            {!isAuthenticated && (
+              <>
+                <NavItem to="/login" title="Login" onClick={() => setMenuOpen(false)} />
+                <NavItem to="/register" title="Sign Up" onClick={() => setMenuOpen(false)} />
+              </>
+            )}
+            <div className="py-2">
+              <ButtonItem
+                buttonName={walletAddress ? "Connected" : "Connect Wallet"}
+                addClass="bg-white text-center w-full"
+                onClick={connect}
+                disabled={!!walletAddress}
+              />
             </div>
-          </>
-        )}
-      </Menu>
+            {isAuthenticated && (
+              <a href="/login" onClick={handleLogout} className="py-2 text-red-500">
+                LogOut
+              </a>
+            )}
+          </div>
+        </nav>
+      )}
+
       {walletError ? (
-        <div style={{ color: "crimson", padding: "8px 64px" }}>{walletError}</div>
+        <div className="px-4 py-2 text-sm text-red-600 sm:px-8">{walletError}</div>
       ) : null}
       {walletAddress ? (
-        <div style={{ padding: "8px 64px", fontSize: "0.9rem" }}>
-          Connected wallet: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+        <div className="px-4 pb-2 text-sm text-slate-600 sm:px-8">
+          Wallet: {formattedAddress}
         </div>
       ) : null}
-    </>
+    </header>
   );
 };
 

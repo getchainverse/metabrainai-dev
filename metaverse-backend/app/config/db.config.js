@@ -3,7 +3,8 @@ module.exports = {
   PORT: "3306",
   USER: "root",
   DB: "metaverse",
-  dialect: "mysql",
+  dialect: "sqlite",
+  storage: "./database.sqlite",
   pool: {
     max: 5,
     min: 0,

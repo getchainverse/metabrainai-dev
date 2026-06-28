@@ -137,12 +137,17 @@ const BoardKnowLedge = ({ step, setStep }) => {
             </div>
           </div>
           <div
-            className="border-2 w-80 h-48 my-auto flex rounded-lg shadow-lg border-[#f2f0e9]"
+            className="border-2 w-80 h-48 my-auto flex rounded-lg shadow-lg border-[#f2f0e9] cursor-pointer hover:opacity-80 transition-opacity relative group"
             style={{
               backgroundImage: `url('/metaverse.png')`,
               backgroundSize: "cover",
             }}
-          ></div>
+            onClick={() => setStep("avatar")}
+          >
+            <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <p className="text-white font-bold text-lg">Configure Avatar</p>
+            </div>
+          </div>
         </div>
         <div className="flex justify-center mt-20">
           <Button

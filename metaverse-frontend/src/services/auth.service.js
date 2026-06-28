@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config/env";
 
-const API_URL = "http://localhost:3001/api/auth/";
+const API_URL = `${API_BASE_URL}/api/auth/`;
 
 const register = (
   firstname,
@@ -47,6 +48,28 @@ const login = (email, password) => {
     });
 };
 
+const requestWalletNonce = (walletAddress) => {
+  return axios
+    .post(API_URL + "wallet/nonce", { walletAddress })
+    .then((response) => response.data);
+};
+
+const verifyWalletSignature = ({ walletAddress, signature, nonceToken }) => {
+  return axios
+    .post(API_URL + "wallet/verify", {
+      walletAddress,
+      signature,
+      nonceToken,
+    })
+    .then((response) => {
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem("accessToken", response.data.accessToken);
+      localStorage.setItem("walletAddress", response.data.user.walletAddress);
+
+      return response.data;
+    });
+};
+
 const sendMail = (email) => {
   return axios.post(API_URL + "sendmail", { email }).then((response) => {
     // if (response.data.accessToken) {
@@ -58,6 +81,8 @@ const sendMail = (email) => {
 
 const logout = () => {
   localStorage.removeItem("user");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("walletAddress");
   return axios.post(API_URL + "signout").then((response) => {
     return response.data;
   });
@@ -65,6 +90,12 @@ const logout = () => {
 
 const getCurrentUser = () => {
   return JSON.parse(localStorage.getItem("user"));
+};
+
+const getAuthHeader = () => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 };
 
 const resetPasswordByUser = (data) => {
@@ -91,9 +122,12 @@ const setRoleByUser = (role, email) => {
 const AuthService = {
   register,
   login,
+  requestWalletNonce,
+  verifyWalletSignature,
   sendMail,
   logout,
   getCurrentUser,
+  getAuthHeader,
   resetPasswordByUser,
   getLastExpiredTime,
   getAllUserData,
