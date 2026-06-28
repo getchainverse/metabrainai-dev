@@ -1,6 +1,6 @@
 import React from "react";
 import { Html } from "@react-three/drei";
-import { IoVideocamOutline, IoVolumeMuteOutline, IoVolumeHighOutline, IoCloseOutline, IoPersonOutline } from "react-icons/io5";
+import { IoVideocamOutline, IoVolumeMuteOutline, IoVolumeHighOutline, IoCloseOutline, IoPersonOutline, IoGiftOutline, IoWalletOutline } from "react-icons/io5";
 
 const AvatarInteractionMenu = ({ player, position, onClose, onStartCall, onToggleMute, isMuted }) => {
   return (
@@ -40,6 +40,28 @@ const AvatarInteractionMenu = ({ player, position, onClose, onStartCall, onToggl
         >
           <IoPersonOutline className="text-lg" />
           View Profile
+        </button>
+
+        <div className="h-px w-full bg-white/10 my-1"></div>
+
+        <button
+          onClick={() => {
+            if (player.onSendMoney) player.onSendMoney(player);
+          }}
+          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-amber-300 hover:bg-amber-500/10 transition-colors"
+        >
+          <IoWalletOutline className="text-lg" />
+          Send Money
+        </button>
+
+        <button
+          onClick={() => {
+            if (player.onSendGift) player.onSendGift(player);
+          }}
+          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-fuchsia-300 hover:bg-fuchsia-500/10 transition-colors"
+        >
+          <IoGiftOutline className="text-lg" />
+          Send Gift
         </button>
       </div>
     </Html>

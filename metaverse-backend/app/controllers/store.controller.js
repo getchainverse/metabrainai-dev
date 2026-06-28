@@ -12,38 +12,8 @@ exports.listCategories = async (_req, res) => {
 
 exports.listItems = async (req, res) => {
   try {
-    const items = await storeService.listItems({
-      categoryId: req.query.categoryId,
-      includeInactive: req.query.includeInactive === "true",
-    });
+    const items = await storeService.listItems(req.query);
     return res.status(200).send({ data: items });
-  } catch (error) {
-    return sendError(res, error);
-  }
-};
-
-exports.createItem = async (req, res) => {
-  try {
-    const item = await storeService.createItem(req.body);
-    return res.status(201).send({ data: item });
-  } catch (error) {
-    return sendError(res, error);
-  }
-};
-
-exports.updateItem = async (req, res) => {
-  try {
-    const item = await storeService.updateItem(req.params.id, req.body);
-    return res.status(200).send({ data: item });
-  } catch (error) {
-    return sendError(res, error);
-  }
-};
-
-exports.deleteItem = async (req, res) => {
-  try {
-    const item = await storeService.deleteItem(req.params.id);
-    return res.status(200).send({ data: item });
   } catch (error) {
     return sendError(res, error);
   }
@@ -87,7 +57,7 @@ exports.verifyEthPurchase = async (req, res) => {
   try {
     const result = await storeService.verifyEthPurchase({
       userId: req.userId,
-      walletAddress: req.walletAddress,
+      walletAddress: req.walletAddress || req.body.walletAddress,
       itemId: req.body.itemId,
       txHash: req.body.txHash,
       chainId: req.body.chainId,
@@ -102,6 +72,21 @@ exports.getTransactions = async (req, res) => {
   try {
     const transactions = await storeService.getTransactions(req.userId);
     return res.status(200).send({ data: transactions });
+  } catch (error) {
+    return sendError(res, error);
+  }
+};
+
+exports.sendGift = async (req, res) => {
+  try {
+    const result = await storeService.sendGift({
+      senderId: req.userId,
+      receiverId: req.body.receiverId,
+      productId: req.body.productId,
+      message: req.body.message,
+      transactionHash: req.body.txHash,
+    });
+    return res.status(201).send({ data: result });
   } catch (error) {
     return sendError(res, error);
   }

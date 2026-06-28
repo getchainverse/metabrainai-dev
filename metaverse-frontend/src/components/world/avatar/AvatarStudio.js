@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useAvatarCustomization } from "../../../hooks/useAvatarCustomization";
+import useStore from "../../../hooks/useStore";
 import AvatarPreviewScene from "./AvatarPreviewScene";
-import { IoBodyOutline, IoHappyOutline, IoShirtOutline, IoSaveOutline, IoArrowUndoOutline, IoArrowRedoOutline, IoRefreshOutline } from "react-icons/io5";
+import { IoBodyOutline, IoHappyOutline, IoShirtOutline, IoSaveOutline, IoArrowUndoOutline, IoArrowRedoOutline, IoRefreshOutline, IoBagOutline } from "react-icons/io5";
 
 const AvatarStudio = () => {
   const {
@@ -16,6 +17,8 @@ const AvatarStudio = () => {
     isLoading,
     isSaving,
   } = useAvatarCustomization();
+
+  const { inventory, equipItem } = useStore();
 
   const [activeTab, setActiveTab] = useState("body");
 
@@ -151,10 +154,39 @@ const AvatarStudio = () => {
           )}
 
           {activeTab === "clothing" && (
-            <div className="animate-fade-in flex flex-col items-center justify-center py-20 text-center opacity-60">
-              <IoShirtOutline className="text-6xl mb-4 text-slate-600" />
-              <p className="text-sm font-medium">Wearable assets library empty.</p>
-              <p className="text-xs text-slate-400 mt-2">Connect 3D asset NFTs or load .glb files here.</p>
+            <div className="animate-fade-in space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Your Wardrobe</h3>
+              
+              {inventory.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-center opacity-60">
+                  <IoBagOutline className="text-4xl mb-3 text-slate-600" />
+                  <p className="text-sm font-medium">Your wardrobe is empty.</p>
+                  <p className="text-xs text-slate-400 mt-1">Visit the Virtual Store in the Metaverse to buy items!</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {inventory.map((inv) => {
+                    const product = inv.Product || inv.item; // Fallback depending on Sequelize alias
+                    if (!product) return null;
+                    return (
+                      <div key={inv.id} className="relative rounded-xl border border-white/10 bg-slate-800/50 p-3 hover:bg-white/5 transition-colors cursor-pointer" onClick={() => equipItem(product.id)}>
+                        <div className="aspect-square bg-black/40 rounded-lg mb-2 overflow-hidden flex items-center justify-center relative">
+                          {product.image ? (
+                            <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <IoShirtOutline className="text-3xl text-slate-500" />
+                          )}
+                          {inv.equipped && (
+                            <div className="absolute top-1 right-1 bg-cyan-500 text-slate-900 text-[10px] font-bold px-1.5 py-0.5 rounded shadow">EQUIPPED</div>
+                          )}
+                        </div>
+                        <h4 className="text-sm font-bold text-white line-clamp-1">{product.name}</h4>
+                        <p className="text-[10px] text-slate-400 capitalize">{product.category}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
           

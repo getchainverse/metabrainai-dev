@@ -10,6 +10,7 @@ module.exports = function (app) {
   app.post("/api/store/purchase", [authJwt.verifyToken, rateLimit({ max: 10, windowMs: 60_000, keyPrefix: "store-purchase" })], controller.purchaseItem);
   app.post("/api/store/purchase/verify", [authJwt.verifyToken, rateLimit({ max: 10, windowMs: 60_000, keyPrefix: "store-verify" })], controller.verifyEthPurchase);
   app.post("/api/store/equip", [authJwt.verifyToken], controller.equipItem);
+  app.post("/api/store/gift", [authJwt.verifyToken, rateLimit({ max: 10, windowMs: 60_000, keyPrefix: "store-gift" })], controller.sendGift);
 
   app.post("/api/store/items", [authJwt.verifyToken, authJwt.isAdmin], controller.createItem);
   app.patch("/api/store/items/:id", [authJwt.verifyToken, authJwt.isAdmin], controller.updateItem);

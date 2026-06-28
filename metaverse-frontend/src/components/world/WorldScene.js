@@ -15,6 +15,7 @@ import NpcChatWindow from "./ui/NpcChatWindow";
 import { DEFAULT_AVATAR_CUSTOMIZATION, mergeCustomization } from "../../constants/avatar";
 import useVideoCall from "./multiplayer/useVideoCall";
 import VideoCallUI from "./ui/VideoCallUI";
+import useStore from "../../hooks/useStore";
 
 const InteractionWatcher = ({ onNearNpc }) => {
   const { scene } = useThree();
@@ -67,6 +68,8 @@ const WorldScene = () => {
     endCall
   } = useVideoCall();
 
+  const { sendMoney } = useStore(false);
+
   // Augment players with voice streams and interaction handlers
   const augmentedPlayers = useMemo(() => {
     const next = { ...players };
@@ -79,10 +82,24 @@ const WorldScene = () => {
         isMutedLocally: voicePeer?.volume === 0,
         onStartCall: () => startCall(id),
         onToggleMute: () => setPeerVolume(id, voicePeer?.volume === 0 ? 1 : 0),
+        onSendMoney: async (p) => {
+          if (!p.walletAddress) return alert("This player has no connected wallet.");
+          const amount = prompt(`Enter ETH to send to ${p.username}:`, "0.001");
+          if (!amount) return;
+          try {
+            await sendMoney(p.walletAddress, amount);
+            alert("Money sent successfully!");
+          } catch (e) {
+            alert("Failed to send money.");
+          }
+        },
+        onSendGift: (p) => {
+          alert(`Sending a gift to ${p.username} will be handled by the Store UI. Please open the store to select a gift.`);
+        }
       };
     }
     return next;
-  }, [players, voicePeers, startCall, setPeerVolume]);
+  }, [players, voicePeers, startCall, setPeerVolume, sendMoney]);
 
   useEffect(() => {
     let mounted = true;
