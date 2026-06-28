@@ -2,7 +2,8 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { verifyMessage, getAddress } = require("ethers");
 const config = require("../config/auth.config");
-const prisma = require("../prisma/client");
+const db = require("../models");
+const User = db.user;
 
 const NONCE_TTL_SECONDS = 300;
 const ACCESS_TOKEN_TTL_SECONDS = 86400;
@@ -66,21 +67,33 @@ const verifyWalletLogin = async ({ walletAddress, signature, nonceToken }) => {
     throw error;
   }
 
-  const user = await prisma.user.upsert({
+  // Find existing user or create a new one
+  let user = await User.findOne({
     where: { walletAddress: normalizedAddress },
-    update: {},
-    create: {
+  });
+
+  if (!user) {
+    user = await User.create({
       walletAddress: normalizedAddress,
       username: `user-${normalizedAddress.slice(2, 8).toLowerCase()}`,
-      role: "user",
-    },
-  });
+      authProvider: "metamask",
+    });
+    // Give new user the default role (role id 1 = "user")
+    await user.setRoles([1]);
+  }
+
+  // Get authorities for JWT
+  let authorities = [];
+  const roles = await user.getRoles();
+  for (let i = 0; i < roles.length; i++) {
+    authorities.push("ROLE_" + roles[i].name.toUpperCase());
+  }
 
   const accessToken = jwt.sign(
     {
       id: user.id,
       walletAddress: user.walletAddress,
-      role: user.role,
+      roles: authorities,
     },
     config.secret,
     { expiresIn: ACCESS_TOKEN_TTL_SECONDS }
@@ -90,7 +103,12 @@ const verifyWalletLogin = async ({ walletAddress, signature, nonceToken }) => {
     accessToken,
     tokenType: "Bearer",
     expiresIn: ACCESS_TOKEN_TTL_SECONDS,
-    user,
+    user: {
+      id: user.id,
+      username: user.username,
+      walletAddress: user.walletAddress,
+      roles: authorities,
+    }
   };
 };
 

@@ -1,5 +1,6 @@
 const walletAuthService = require("../services/wallet-auth.service");
-const prisma = require("../prisma/client");
+const db = require("../models");
+const User = db.user;
 
 exports.createNonce = (req, res) => {
   try {
@@ -46,9 +47,7 @@ exports.getCurrentWalletUser = async (req, res) => {
       return res.status(401).send({ message: "Unauthorized!" });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: req.userId },
-    });
+    const user = await User.findByPk(req.userId);
 
     if (!user) {
       return res.status(404).send({ message: "User not found." });
