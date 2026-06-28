@@ -154,6 +154,9 @@ const Header = () => {
                   <Link to="/profile" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => setProfileDropdownOpen(false)}>
                     Profile
                   </Link>
+                  <Link to="/avatar" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors font-medium text-cyan-600" onClick={() => setProfileDropdownOpen(false)}>
+                    Customize Avatar
+                  </Link>
                   <button 
                     onClick={() => { copyWallet(); setProfileDropdownOpen(false); }}
                     className="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"

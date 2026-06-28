@@ -9,6 +9,7 @@ import ForgotPage from "./pages/forgot";
 import ResetPage from "./pages/reset";
 import StorePage from "./pages/store";
 import SocialPage from "./pages/social";
+import AvatarPage from "./pages/avatar";
 import { WalletRoute, AdminRoute } from "./components/routing/ProtectedRoutes";
 import "./App.css";
 
@@ -46,6 +47,15 @@ function App() {
           element={
             <WalletRoute>
               <SocialPage />
+            </WalletRoute>
+          }
+        />
+        <Route
+          exact
+          path="/avatar"
+          element={
+            <WalletRoute>
+              <AvatarPage />
             </WalletRoute>
           }
         />

@@ -66,6 +66,7 @@ require("./app/routes/npc.routes")(app);
 require("./app/routes/store.routes")(app);
 require("./app/routes/social.routes")(app);
 require("./app/routes/admin.routes")(app);
+require("./app/routes/avatar.routes")(app);
 
 const worldIo = require("./app/realtime/world.socket").attachWorldSocket(
   server,
