@@ -1,3 +1,5 @@
+const env = require("./env");
+
 module.exports = {
-  secret: "bezkoder-secret-key"
+  secret: env.jwtSecret,
 };

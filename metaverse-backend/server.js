@@ -1,85 +1,90 @@
 const express = require("express");
-
+const http = require("http");
 const cors = require("cors");
-
 const cookieSession = require("cookie-session");
-
-const sqls = require("@sql-access/nodesql");
 
 require("dotenv").config();
 
-const app = express();
+const env = require("./app/config/env");
+const prisma = require("./app/prisma/client");
+const { requestLogger, logger } = require("./app/utils/logger");
+const correlationId = require("./app/middleware/correlationId");
+const rateLimit = require("./app/middleware/rateLimit");
+const storeService = require("./app/services/store.service");
 
-app.use(cors());
-/* for Angular Client (withCredentials) */
+const app = express();
+const server = http.createServer(app);
+
 app.use(
   cors({
     credentials: true,
-    origin: ["http://localhost:3000"],
+    origin: env.corsOrigins,
   })
 );
-
-// parse requests of content-type - application/json
 app.use(express.json());
-
-// parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
+app.use(correlationId);
+app.use(requestLogger);
+app.use(
+  rateLimit({ windowMs: 60_000, max: 300, keyPrefix: "global" })
+);
 
 app.use(
   cookieSession({
     name: "bezkoder-session",
-    keys: ["COOKIE_SECRET"], // should use as secret environment variable
+    keys: [env.sessionSecret],
     httpOnly: true,
     sameSite: "strict",
   })
 );
 
-// database
-// const db = require("./app/models");
-// const Role = db.role;
+const db = require("./app/models");
+const Role = db.role;
 
-// db.sequelize.sync({ alter: true }).then(() => {
-//   initial();
-// });
-// force: true will drop the table if it already exists
-// db.sequelize.sync({force: true}).then(() => {
-//   console.log('Drop and Resync Database with { force: true }');
-//   initial();
-// });
-
-// simple route
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to bezkoder application." });
+db.sequelize.sync().then(() => {
+  initial();
 });
 
-// routes
+app.get("/", (_req, res) => {
+  res.json({ message: "MetaBrain AI Metaverse API", version: "1.0.0" });
+});
+
+app.get("/health", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return res.status(200).json({ status: "ok", database: "connected" });
+  } catch (error) {
+    logger.error("health check failed", { message: error.message });
+    return res.status(503).json({ status: "error", database: "disconnected" });
+  }
+});
+
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
+require("./app/routes/profile.routes")(app);
+require("./app/routes/npc.routes")(app);
+require("./app/routes/store.routes")(app);
+require("./app/routes/social.routes")(app);
+require("./app/routes/admin.routes")(app);
 
-// set port, listen for requests
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}.`);
+const worldIo = require("./app/realtime/world.socket").attachWorldSocket(
+  server,
+  env.corsOrigins
+);
+require("./app/realtime/social.socket").attachSocialSocket(worldIo);
+
+storeService
+  .seedStore()
+  .then(() => logger.info("store catalog seeded"))
+  .catch((error) => logger.error("store seed failed", { message: error.message }));
+
+server.listen(env.port, () => {
+  logger.info("server started", { port: env.port });
 });
 
-function initial() {
-  Role.create({
-    id: 1,
-    name: "sales",
-  });
-
-  Role.create({
-    id: 2,
-    name: "vp",
-  });
-
-  Role.create({
-    id: 3,
-    name: "admin",
-  });
-
-  Role.create({
-    id: 4,
-    name: "level",
-  });
+async function initial() {
+  await Role.findOrCreate({ where: { id: 1 }, defaults: { id: 1, name: "sales" } });
+  await Role.findOrCreate({ where: { id: 2 }, defaults: { id: 2, name: "vp" } });
+  await Role.findOrCreate({ where: { id: 3 }, defaults: { id: 3, name: "admin" } });
+  await Role.findOrCreate({ where: { id: 4 }, defaults: { id: 4, name: "level" } });
 }

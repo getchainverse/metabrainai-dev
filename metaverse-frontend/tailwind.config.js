@@ -5,6 +5,10 @@ export default {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      colors: {
+        primary: "#0F7BDE",
+        surface: "#f6f8fb",
+      },
       fontFamily: {
         sans: ["Roboto", ...defaultTheme.fontFamily.sans],
         pacifico: ["Pacifico", "cursive"],

@@ -8,4 +8,8 @@ module.exports = function (app) {
   app.post("/api/doc/uploaddoc", controller.uploadDoc);
   app.post("/api/doc/getdoccontent", controller.getDocContent);
   app.post("/api/doc/chroma", controller.chroma);
+  app.get("/api/doc/getalldocs", controller.getAllDocs);
+  app.get("/api/doc/getallwebs", controller.getAllWebs);
+  app.post("/api/doc/updatedocroles", controller.updateDocRoles);
+  app.post("/api/doc/updatewebroles", controller.updateWebRoles);
 };

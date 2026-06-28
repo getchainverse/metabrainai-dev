@@ -1,12 +1,10 @@
 import Profile from "../../components/Profile";
-import Header from "../../components/Header";
-const ProfilePage = () => {
-  return (
-    <>
-      <Header />
-      <Profile />
-    </>
-  );
-};
+import AppLayout from "../../components/layout/AppLayout";
+
+const ProfilePage = () => (
+  <AppLayout>
+    <Profile />
+  </AppLayout>
+);
 
 export default ProfilePage;
