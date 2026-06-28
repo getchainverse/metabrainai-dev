@@ -38,6 +38,17 @@ const Header = () => {
     [showAdmin]
   );
 
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Handle scroll for shadow
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -61,7 +72,7 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[#E2E8F0] bg-white/80 backdrop-blur-md transition-shadow hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
+    <header className={`sticky top-0 z-50 w-full border-b border-[#E2E8F0] bg-white/80 backdrop-blur-md transition-shadow duration-200 ${isScrolled ? 'shadow-sm' : ''}`}>
       <div className="mx-auto flex h-[70px] max-w-[1280px] items-center justify-between px-4 sm:px-6 lg:px-8">
         
         {/* Left: Logo */}
