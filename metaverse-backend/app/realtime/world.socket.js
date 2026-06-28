@@ -216,8 +216,30 @@ const attachWorldSocket = (httpServer, corsOrigins = ["http://localhost:3000"]) 
       io.to(peerId).emit("voice:ice-candidate", { peerId: socket.id, candidate });
     });
 
+    socket.on("call:request", ({ peerId }) => {
+      const current = roomPlayers.get(socket.id);
+      io.to(peerId).emit("call:incoming", { peerId: socket.id, username: current?.username || "Guest" });
+    });
+
+    socket.on("call:accept", ({ peerId }) => {
+      io.to(peerId).emit("call:accepted", { peerId: socket.id });
+    });
+
+    socket.on("call:reject", ({ peerId }) => {
+      io.to(peerId).emit("call:rejected", { peerId: socket.id });
+    });
+
+    socket.on("call:end", ({ peerId }) => {
+      io.to(peerId).emit("call:ended", { peerId: socket.id });
+    });
+
+    socket.on("call:signal", ({ peerId, signal }) => {
+      io.to(peerId).emit("call:signal", { peerId: socket.id, signal });
+    });
+
     socket.on("disconnect", () => {
       socket.to(ROOM_NAME).emit("voice:peer-leave", { peerId: socket.id });
+      socket.to(ROOM_NAME).emit("call:ended", { peerId: socket.id }); // End active calls on disconnect
       roomPlayers.delete(socket.id);
       socket.to(ROOM_NAME).emit("player:left", { id: socket.id });
       syncVoicePairs(io, ROOM_NAME);

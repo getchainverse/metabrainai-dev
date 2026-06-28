@@ -3,6 +3,7 @@ import { BrowserProvider, parseEther } from "ethers";
 import { IoChevronUp, IoChevronDown, IoChevronBack, IoChevronForward, IoGlobeOutline, IoPeopleOutline, IoMicOutline, IoVideocamOutline, IoVolumeMuteOutline, IoGiftOutline, IoContractOutline, IoExpandOutline, IoGameControllerOutline, IoSettingsOutline, IoSpeedometerOutline, IoWarningOutline } from "react-icons/io5";
 import { FaKeyboard } from "react-icons/fa";
 import { BsArrowUpSquare } from "react-icons/bs";
+import VoiceSettings from "./VoiceSettings";
 
 const Button = ({ label, onPointerDown, onPointerUp, icon: Icon }) => (
   <button
@@ -31,6 +32,7 @@ const WorldOverlay = ({
 }) => {
   const [minimized, setMinimized] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -120,12 +122,20 @@ const WorldOverlay = ({
                 </div>
               </div>
               
-              <button 
-                onClick={() => setMinimized(true)}
-                className="p-2 -mr-2 -mt-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-              >
-                <IoContractOutline className="text-lg" />
-              </button>
+              <div className="flex -mt-2 -mr-2">
+                <button 
+                  onClick={() => setSettingsOpen(true)}
+                  className="p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <IoSettingsOutline className="text-lg" />
+                </button>
+                <button 
+                  onClick={() => setMinimized(true)}
+                  className="p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <IoContractOutline className="text-lg" />
+                </button>
+              </div>
             </div>
 
             {/* Description / Controls Section */}
@@ -292,7 +302,6 @@ const WorldOverlay = ({
         </button>
       </div>
       
-      {/* Scrollbar styling */}
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
@@ -309,6 +318,10 @@ const WorldOverlay = ({
           background: rgba(255, 255, 255, 0.3);
         }
       `}} />
+
+      {settingsOpen && (
+        <VoiceSettings onClose={() => setSettingsOpen(false)} />
+      )}
     </div>
   );
 };

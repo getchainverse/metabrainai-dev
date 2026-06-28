@@ -13,6 +13,8 @@ import ProfileService from "../../services/profile.service";
 import NpcInteraction from "./npc/NpcInteraction";
 import NpcChatWindow from "./ui/NpcChatWindow";
 import { DEFAULT_AVATAR_CUSTOMIZATION, mergeCustomization } from "../../constants/avatar";
+import useVideoCall from "./multiplayer/useVideoCall";
+import VideoCallUI from "./ui/VideoCallUI";
 
 const InteractionWatcher = ({ onNearNpc }) => {
   const { scene } = useThree();
@@ -53,6 +55,34 @@ const WorldScene = () => {
     toggleMute,
     setPeerVolume,
   } = useWorldMultiplayer();
+
+  const {
+    callStatus,
+    activeCall,
+    incomingCall,
+    localStream,
+    startCall,
+    acceptCall,
+    rejectCall,
+    endCall
+  } = useVideoCall();
+
+  // Augment players with voice streams and interaction handlers
+  const augmentedPlayers = useMemo(() => {
+    const next = { ...players };
+    for (const [id, player] of Object.entries(next)) {
+      const voicePeer = voicePeers.find((p) => p.peerId === id);
+      next[id] = {
+        ...player,
+        voiceStream: voicePeer?.stream || null,
+        isSpeaking: !!voicePeer?.stream, // Basic indicator, can be enhanced with AudioContext analyzer
+        isMutedLocally: voicePeer?.volume === 0,
+        onStartCall: () => startCall(id),
+        onToggleMute: () => setPeerVolume(id, voicePeer?.volume === 0 ? 1 : 0),
+      };
+    }
+    return next;
+  }, [players, voicePeers, startCall, setPeerVolume]);
 
   useEffect(() => {
     let mounted = true;
@@ -138,7 +168,7 @@ const WorldScene = () => {
           <WorldLights />
           <Ground />
           <WorldProps obstacles={obstacles} />
-          <RemotePlayers players={players} selfId={selfId} />
+          <RemotePlayers players={augmentedPlayers} selfId={selfId} />
           <Player
             obstacles={obstacles}
             onStateChange={handleStateChange}
@@ -176,53 +206,15 @@ const WorldScene = () => {
         </button>
       )}
       <NpcChatWindow open={chatOpen} onClose={() => setChatOpen(false)} />
-
-      {/* Video feeds container */}
-      <div className="absolute bottom-24 left-4 z-50 flex flex-col gap-2 pointer-events-auto">
-        {voicePeers.map((peer) => {
-          const hasVideo = peer.stream.getVideoTracks().length > 0;
-          if (!hasVideo) return null;
-          return (
-            <div key={peer.peerId} className="flex flex-col gap-1 rounded-lg bg-black/60 p-2 text-white">
-              <span className="text-xs font-semibold">{players[peer.peerId]?.username || "Guest"}</span>
-              <video
-                autoPlay
-                playsInline
-                ref={(el) => {
-                  if (el && el.srcObject !== peer.stream) {
-                    el.srcObject = peer.stream;
-                  }
-                  if (el) {
-                    el.volume = peer.volume ?? 1;
-                  }
-                }}
-                className="h-28 w-40 rounded bg-black object-cover"
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Audio feeds for voice-only peers */}
-      {voicePeers.map((peer) => {
-        const hasVideo = peer.stream.getVideoTracks().length > 0;
-        if (hasVideo) return null;
-        return (
-          <audio
-            key={peer.peerId}
-            autoPlay
-            playsInline
-            ref={(el) => {
-              if (el && el.srcObject !== peer.stream) {
-                el.srcObject = peer.stream;
-              }
-              if (el) {
-                el.volume = peer.volume ?? 1;
-              }
-            }}
-          />
-        );
-      })}
+      <VideoCallUI 
+        callStatus={callStatus}
+        activeCall={activeCall}
+        incomingCall={incomingCall}
+        localStream={localStream}
+        acceptCall={acceptCall}
+        rejectCall={rejectCall}
+        endCall={endCall}
+      />
     </div>
   );
 };
