@@ -45,6 +45,10 @@ module.exports = (sequelize, Sequelize) => {
       unique: true,
       allowNull: true,
     },
+    nonce: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
     authProvider: {
       type: Sequelize.STRING,
       defaultValue: "local",

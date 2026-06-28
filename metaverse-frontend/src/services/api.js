@@ -5,6 +5,7 @@ import AuthService from "./auth.service";
 const client = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
 client.interceptors.request.use((config) => {

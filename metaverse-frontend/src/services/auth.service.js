@@ -2,6 +2,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../config/env";
 
 const API_URL = `${API_BASE_URL}/api/auth/`;
+axios.defaults.withCredentials = true;
 
 const register = (
   firstname,

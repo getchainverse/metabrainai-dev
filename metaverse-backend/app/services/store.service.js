@@ -61,22 +61,27 @@ const verifyEthPurchase = async ({ userId, walletAddress, itemId, txHash, chainI
   const existing = await Inventory.findOne({ where: { userId, productId: itemId } });
   if (existing) throw new Error("You already own this item.");
 
-  // For MVP/Local testing, bypass full chain validation if explicitly requested via 'dev_mock' hash
-  if (txHash !== 'dev_mock') {
-    try {
-      const provider = new ethers.JsonRpcProvider("https://rpc.sepolia.org");
-      const tx = await provider.getTransaction(txHash);
-      if (!tx) throw new Error("Transaction not found on chain.");
-      
-      const receipt = await tx.wait();
-      if (receipt.status !== 1) throw new Error("Transaction failed on chain.");
+  try {
+    if (!txHash) throw new Error("Transaction hash is required.");
+    const provider = new ethers.JsonRpcProvider("https://rpc.sepolia.org");
+    const tx = await provider.getTransaction(txHash);
+    if (!tx) throw new Error("Transaction not found on chain.");
+    
+    const receipt = await tx.wait();
+    if (receipt.status !== 1) throw new Error("Transaction failed on chain.");
 
-      // In production, we'd verify tx.to === TREASURY_ADDRESS and tx.value >= parseEther(product.price.toString())
-    } catch (err) {
-      const error = new Error("Transaction verification failed: " + err.message);
-      error.statusCode = 400;
-      throw error;
+    if (tx.to.toLowerCase() !== TREASURY_ADDRESS.toLowerCase()) {
+      throw new Error("Transaction was not sent to the treasury address.");
     }
+    
+    const requiredValue = ethers.parseEther(product.price.toString());
+    if (tx.value < requiredValue) {
+      throw new Error("Transaction value is less than product price.");
+    }
+  } catch (err) {
+    const error = new Error("Transaction verification failed: " + err.message);
+    error.statusCode = 400;
+    throw error;
   }
 
   // Create order ledger
