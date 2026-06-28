@@ -22,6 +22,8 @@ db.role = require("../models/role.model.js")(sequelize, Sequelize);
 db.doc = require("../models/doc.model.js")(sequelize, Sequelize);
 db.web = require("../models/web.model.js")(sequelize, Sequelize);
 db.avatar = require("../models/avatar.model.js")(sequelize, Sequelize);
+db.profile = require("../models/profile.model.js")(sequelize, Sequelize);
+db.avatarCustomization = require("../models/avatar_customization.model.js")(sequelize, Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: "user_roles",
@@ -44,6 +46,12 @@ db.role.belongsToMany(db.web, {
 
 db.user.hasOne(db.avatar, { foreignKey: "userId" });
 db.avatar.belongsTo(db.user, { foreignKey: "userId" });
+
+db.user.hasOne(db.profile, { foreignKey: "userId" });
+db.profile.belongsTo(db.user, { foreignKey: "userId" });
+
+db.user.hasOne(db.avatarCustomization, { foreignKey: "userId" });
+db.avatarCustomization.belongsTo(db.user, { foreignKey: "userId" });
 
 db.ROLES = ["level", "admin", "sales", "vp"];
 

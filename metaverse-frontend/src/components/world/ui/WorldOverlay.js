@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserProvider, parseEther } from "ethers";
-import { IoChevronUp, IoChevronDown, IoChevronBack, IoChevronForward, IoGlobeOutline, IoPeopleOutline, IoMicOutline, IoVideocamOutline, IoVolumeMuteOutline, IoGiftOutline, IoChevronMinimize, IoExpandOutline, IoGameControllerOutline, IoSettingsOutline, IoSpeedometerOutline, IoWarningOutline } from "react-icons/io5";
+import { IoChevronUp, IoChevronDown, IoChevronBack, IoChevronForward, IoGlobeOutline, IoPeopleOutline, IoMicOutline, IoVideocamOutline, IoVolumeMuteOutline, IoGiftOutline, IoContractOutline, IoExpandOutline, IoGameControllerOutline, IoSettingsOutline, IoSpeedometerOutline, IoWarningOutline } from "react-icons/io5";
 import { FaKeyboard } from "react-icons/fa";
 import { BsArrowUpSquare } from "react-icons/bs";
 
@@ -124,7 +124,7 @@ const WorldOverlay = ({
                 onClick={() => setMinimized(true)}
                 className="p-2 -mr-2 -mt-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
               >
-                <IoChevronMinimize className="text-lg" />
+                <IoContractOutline className="text-lg" />
               </button>
             </div>
 

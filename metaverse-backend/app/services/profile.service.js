@@ -1,4 +1,4 @@
-const prisma = require("../prisma/client");
+// Profile service
 
 const DEFAULT_AVATAR = "avatar-1";
 const AVATAR_OPTIONS = {
@@ -132,11 +132,13 @@ const formatCustomization = (customization) => ({
   accessories: customization.accessories || [],
 });
 
+const db = require("../models");
+const User = db.user;
+const Profile = db.profile;
+const AvatarCustomization = db.avatarCustomization;
+
 const getOrCreateProfile = async (userId) => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { profile: true },
-  });
+  const user = await User.findByPk(userId);
 
   if (!user) {
     const error = new Error("User not found.");
@@ -144,16 +146,15 @@ const getOrCreateProfile = async (userId) => {
     throw error;
   }
 
-  const profile =
-    user.profile ||
-    (await prisma.profile.create({
-      data: {
-        userId: user.id,
-        username: user.username || `user-${user.walletAddress.slice(2, 8).toLowerCase()}`,
-        avatar: user.avatarId || DEFAULT_AVATAR,
-        role: user.role || "user",
-      },
-    }));
+  let profile = await Profile.findOne({ where: { userId } });
+  if (!profile) {
+    profile = await Profile.create({
+      userId: user.id,
+      username: user.username || `user-${user.walletAddress ? user.walletAddress.slice(2, 8).toLowerCase() : user.id}`,
+      avatar: user.avatarId || DEFAULT_AVATAR,
+      role: "user",
+    });
+  }
 
   return formatProfile({ user, profile });
 };
@@ -168,9 +169,7 @@ const updateProfile = async (userId, payload) => {
     throw error;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
+  const user = await User.findByPk(userId);
 
   if (!user) {
     const error = new Error("User not found.");
@@ -178,39 +177,33 @@ const updateProfile = async (userId, payload) => {
     throw error;
   }
 
-  const profile = await prisma.profile.upsert({
-    where: { userId },
-    update: {
+  let profile = await Profile.findOne({ where: { userId } });
+  if (profile) {
+    profile = await profile.update({
       username: input.username,
       bio: input.bio,
       avatar: input.avatar || DEFAULT_AVATAR,
-      role: user.role || "user",
-    },
-    create: {
+    });
+  } else {
+    profile = await Profile.create({
       userId,
       username: input.username,
       bio: input.bio,
       avatar: input.avatar || DEFAULT_AVATAR,
-      role: user.role || "user",
-    },
-  });
+      role: "user",
+    });
+  }
 
-  const updatedUser = await prisma.user.update({
-    where: { id: userId },
-    data: {
-      username: input.username,
-      avatarId: input.avatar || DEFAULT_AVATAR,
-    },
+  const updatedUser = await user.update({
+    username: input.username,
+    avatarId: input.avatar || DEFAULT_AVATAR,
   });
 
   return formatProfile({ user: updatedUser, profile });
 };
 
 const getOrCreateCustomization = async (userId) => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { avatarCustomization: true },
-  });
+  const user = await User.findByPk(userId);
 
   if (!user) {
     const error = new Error("User not found.");
@@ -218,14 +211,13 @@ const getOrCreateCustomization = async (userId) => {
     throw error;
   }
 
-  const customization =
-    user.avatarCustomization ||
-    (await prisma.avatarCustomization.create({
-      data: {
-        userId: user.id,
-        ...DEFAULT_CUSTOMIZATION,
-      },
-    }));
+  let customization = await AvatarCustomization.findOne({ where: { userId } });
+  if (!customization) {
+    customization = await AvatarCustomization.create({
+      userId: user.id,
+      ...DEFAULT_CUSTOMIZATION,
+    });
+  }
 
   return formatCustomization(customization);
 };
@@ -240,9 +232,7 @@ const updateCustomization = async (userId, payload) => {
     throw error;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
+  const user = await User.findByPk(userId);
 
   if (!user) {
     const error = new Error("User not found.");
@@ -250,15 +240,16 @@ const updateCustomization = async (userId, payload) => {
     throw error;
   }
 
-  const customization = await prisma.avatarCustomization.upsert({
-    where: { userId },
-    update: input,
-    create: {
+  let customization = await AvatarCustomization.findOne({ where: { userId } });
+  if (customization) {
+    customization = await customization.update(input);
+  } else {
+    customization = await AvatarCustomization.create({
       userId,
       ...DEFAULT_CUSTOMIZATION,
       ...input,
-    },
-  });
+    });
+  }
 
   return formatCustomization(customization);
 };
