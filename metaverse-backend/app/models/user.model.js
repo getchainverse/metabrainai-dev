@@ -40,6 +40,19 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       defaultValue: "0",
     },
+    walletAddress: {
+      type: Sequelize.STRING,
+      unique: true,
+      allowNull: true,
+    },
+    nonce: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    authProvider: {
+      type: Sequelize.STRING,
+      defaultValue: "local",
+    },
   });
 
   return User;

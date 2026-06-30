@@ -14,11 +14,10 @@ const AddWebsiteUrl = ({ showModal, setShowModal }) => {
   const CheckboxGroup = Checkbox.Group;
   const [checkedList, setCheckedList] = useState(defaultCheckedList);
   const [checkAll, setCheckAll] = useState(false);
-  const [permission, setPermission] = useState([]);
   const [indeterminate, setIndeterminate] = useState(true);
   const [checkedRoles, setCheckedRoles] = useState(["sales"]);
   const plainOptions = ["Level 1", "Sales", "Manager", "V.P"];
-  const roles = { Level1: "level", Sales: "sales", Manager: "admin", VP: "vp" };
+  const roles = { "Level 1": "level", "Sales": "sales", "Manager": "admin", "V.P": "vp" };
 
   const onChangePermisson = (list) => {
     setCheckedList(list);

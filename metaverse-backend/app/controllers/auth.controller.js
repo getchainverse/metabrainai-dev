@@ -1,4 +1,5 @@
 const db = require("../models");
+const { ethers } = require("ethers");
 const config = require("../config/auth.config");
 const User = db.user;
 const Role = db.role;
@@ -313,6 +314,82 @@ exports.setRoleByUser = async (req, res) => {
       const result = user.setRoles([1]);
       if (result) res.send({ message: "User registered successfully!" });
     }
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
+exports.getNonce = async (req, res) => {
+  const { walletAddress } = req.query;
+  if (!walletAddress) {
+    return res.status(400).send({ message: "walletAddress is required" });
+  }
+
+  try {
+    const nonce = Math.floor(Math.random() * 1000000).toString();
+    
+    // Find or create user by walletAddress
+    let [user] = await User.findOrCreate({
+      where: { walletAddress },
+      defaults: { 
+        walletAddress,
+        username: "Web3User_" + walletAddress.substring(0, 6),
+        authProvider: "metamask"
+      }
+    });
+
+    user.nonce = nonce;
+    await user.save();
+
+    res.status(200).send({ nonce });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
+exports.verifyMetamask = async (req, res) => {
+  const { walletAddress, signature } = req.body;
+  if (!walletAddress || !signature) {
+    return res.status(400).send({ message: "Missing walletAddress or signature" });
+  }
+
+  try {
+    const user = await User.findOne({ where: { walletAddress } });
+    if (!user || !user.nonce) {
+      return res.status(404).send({ message: "User or nonce not found. Request nonce first." });
+    }
+
+    const message = `Sign this message to authenticate with MetaBrain AI Metaverse.\n\nNonce: ${user.nonce}`;
+    const recoveredAddress = ethers.verifyMessage(message, signature);
+
+    if (recoveredAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+      return res.status(401).send({ message: "Signature verification failed" });
+    }
+
+    // Generate new nonce to prevent replay attacks
+    user.nonce = Math.floor(Math.random() * 1000000).toString();
+    await user.save();
+
+    const token = jwt.sign({ id: user.id }, config.secret, {
+      expiresIn: 86400, // 24 hours
+    });
+
+    let authorities = [];
+    const roles = await user.getRoles();
+    for (let i = 0; i < roles.length; i++) {
+      authorities.push("ROLE_" + roles[i].name.toUpperCase());
+    }
+
+    req.session.token = token;
+
+    res.status(200).send({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      roles: authorities,
+      walletAddress: user.walletAddress,
+      accessToken: token
+    });
   } catch (err) {
     res.status(500).send({ message: err.message });
   }

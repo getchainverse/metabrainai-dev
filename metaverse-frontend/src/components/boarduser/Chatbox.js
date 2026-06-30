@@ -40,9 +40,15 @@ const ChatBox = ({
       },
       (error) => {
         console.log("error", error);
-        ShowErrorMessage(error.response.data.message);
-        setAnswer(error.response.data.error);
-        setUpdatedArray((arr) => [...arr, error.response.data.error]);
+        const message =
+          error?.response?.data?.message ||
+          error?.message ||
+          "Something went wrong";
+        const responseError =
+          error?.response?.data?.error || error?.response?.data?.message || message;
+        ShowErrorMessage(message);
+        setAnswer(responseError);
+        setUpdatedArray((arr) => [...arr, responseError]);
         setInputStatus(true);
       }
     );

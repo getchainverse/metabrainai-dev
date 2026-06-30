@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:3001/api/doc/";
+import { API_BASE_URL } from "../config/env";
+
+const API_URL = `${API_BASE_URL}/api/doc/`;
 
 const CHAT_URL = "http://localhost:5000/";
 const createDocInfo = (
@@ -66,6 +68,22 @@ const createWebInfo = (
   });
 };
 
+const getAllDocs = () => {
+  return axios.get(API_URL + "getalldocs");
+};
+
+const getAllWebs = () => {
+  return axios.get(API_URL + "getallwebs");
+};
+
+const updateDocRoles = (id, roles) => {
+  return axios.post(API_URL + "updatedocroles", { id, roles });
+};
+
+const updateWebRoles = (id, roles) => {
+  return axios.post(API_URL + "updatewebroles", { id, roles });
+};
+
 const DocService = {
   createDocInfo,
   getDocInfo,
@@ -74,6 +92,10 @@ const DocService = {
   createWebInfo,
   embedde,
   chat,
+  getAllDocs,
+  getAllWebs,
+  updateDocRoles,
+  updateWebRoles,
 };
 
 export default DocService;
