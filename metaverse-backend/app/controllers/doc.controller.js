@@ -299,3 +299,63 @@ exports.uploadDoc = (req, res) => {
 exports.chroma = (req, res) => {
   console.log("req", req);
 };
+
+exports.getAllDocs = async (req, res) => {
+  try {
+    const docs = await Doc.findAll({
+      include: [{ model: Role, attributes: ["name"] }]
+    });
+    res.send({ message: docs });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
+exports.getAllWebs = async (req, res) => {
+  try {
+    const webs = await Web.findAll({
+      include: [{ model: Role, attributes: ["name"] }]
+    });
+    res.send({ message: webs });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
+exports.updateDocRoles = async (req, res) => {
+  try {
+    const doc = await Doc.findByPk(req.body.id);
+    if (!doc) return res.status(404).send({ message: "Doc not found" });
+    
+    const roles = await Role.findAll({
+      where: {
+        name: {
+          [Op.or]: req.body.roles,
+        },
+      }
+    });
+    await doc.setRoles(roles);
+    res.send({ message: "Roles updated successfully!" });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
+exports.updateWebRoles = async (req, res) => {
+  try {
+    const web = await Web.findByPk(req.body.id);
+    if (!web) return res.status(404).send({ message: "Web not found" });
+    
+    const roles = await Role.findAll({
+      where: {
+        name: {
+          [Op.or]: req.body.roles,
+        },
+      }
+    });
+    await web.setRoles(roles);
+    res.send({ message: "Roles updated successfully!" });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};

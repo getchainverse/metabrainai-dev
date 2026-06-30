@@ -1,0 +1,272 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  walletAddress String   @unique
+  username      String?
+  avatarId      String?
+  role          String   @default("user")
+  createdAt     DateTime @default(now())
+  profile       Profile?
+  avatarCustomization AvatarCustomization?
+  inventory     InventoryItem[]
+  transactions  StoreTransaction[]
+  sentFriendRequests FriendRequest[] @relation("FriendRequestSender")
+  receivedFriendRequests FriendRequest[] @relation("FriendRequestReceiver")
+  friendshipsA Friendship[] @relation("FriendshipUserA")
+  friendshipsB Friendship[] @relation("FriendshipUserB")
+  directMessagesSent DirectMessage[] @relation("DirectMessageSender")
+  directMessagesReceived DirectMessage[] @relation("DirectMessageReceiver")
+  notifications SocialNotification[]
+  roles         Role[]
+  npcConversations NpcConversation[]
+
+  @@index([walletAddress])
+}
+
+model Profile {
+  id        String @id @default(uuid())
+  userId    String @unique
+  username  String
+  bio       String?
+  avatar    String?
+  role      String @default("user")
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AvatarCustomization {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  hairStyle     String   @default("short")
+  hairColor     String   @default("#6b4f3b")
+  eyesStyle     String   @default("default")
+  eyesColor     String   @default("#2f3a4a")
+  bodyStyle     String   @default("athletic")
+  bodyColor     String   @default("#f2d4b0")
+  clothesStyle  String   @default("casual")
+  clothesColor  String   @default("#0f7bde")
+  accessories   String[] @default([])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model NpcConversation {
+  id             String        @id @default(uuid())
+  userId         String
+  npcKey         String
+  title          String?
+  knowledgeBaseId String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  messages       NpcMessage[]
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  knowledgeBase  KnowledgeBase? @relation(fields: [knowledgeBaseId], references: [id], onDelete: SetNull)
+
+  @@index([userId, npcKey])
+}
+
+model NpcMessage {
+  id            String          @id @default(uuid())
+  conversationId String
+  role          String
+  content       String
+  citations     Json?
+  createdAt     DateTime        @default(now())
+  conversation  NpcConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model KnowledgeBase {
+  id               String   @id @default(uuid())
+  name             String
+  description      String?
+  sourceType       String   @default("document")
+  status           String   @default("draft")
+  fileName         String?
+  fileType         String?
+  fileSize         Int?
+  chunkCount       Int      @default(0)
+  chromaCollection String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  roles            Role[]
+  avatars          AIAvatar[]
+  conversations    NpcConversation[]
+}
+
+model Role {
+  id             String          @id @default(uuid())
+  name           String          @unique
+  description    String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  users          User[]
+  permissions    Permission[]
+  knowledgeBases KnowledgeBase[]
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  roles       Role[]
+}
+
+model AIAvatar {
+  id               String        @id @default(uuid())
+  name             String
+  description      String?
+  voice            String
+  model            String
+  knowledgeBaseId  String?
+  knowledgeBase    KnowledgeBase? @relation(fields: [knowledgeBaseId], references: [id], onDelete: SetNull)
+  greeting         String?
+  prompt           String
+  temperature      Float         @default(0.7)
+  imageUrl         String?
+  isActive         Boolean       @default(true)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([knowledgeBaseId])
+}
+
+model StoreCategory {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  name      String
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     StoreItem[]
+}
+
+model StoreItem {
+  id          String          @id @default(uuid())
+  categoryId  String?
+  name        String
+  description String?
+  sku         String          @unique
+  price       Int
+  ethPrice    Decimal         @db.Decimal(18, 6)
+  currency    String          @default("coins")
+  assetUrl    String?
+  thumbnailUrl String?
+  meta        Json?
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  category    StoreCategory?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  inventory   InventoryItem[]
+  transactions StoreTransaction[]
+
+  @@index([categoryId])
+}
+
+model InventoryItem {
+  id          String      @id @default(uuid())
+  userId      String
+  itemId      String
+  quantity    Int         @default(1)
+  isEquipped  Boolean     @default(false)
+  equippedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item        StoreItem   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+  @@index([userId, isEquipped])
+}
+
+model StoreTransaction {
+  id          String      @id @default(uuid())
+  userId      String
+  itemId      String
+  type        String
+  quantity    Int         @default(1)
+  amount      Int
+  ethAmount   Decimal?    @db.Decimal(18, 6)
+  currency    String      @default("coins")
+  chainId     Int?
+  txHash      String?     @unique
+  fromAddress String?
+  toAddress   String?
+  status      String      @default("pending")
+  blockNumber Int?
+  confirmedAt DateTime?
+  createdAt   DateTime    @default(now())
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item        StoreItem   @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+}
+
+model FriendRequest {
+  id          String   @id @default(uuid())
+  senderId    String
+  receiverId  String
+  status      String   @default("pending")
+  message     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  sender      User     @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User     @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
+}
+
+model Friendship {
+  id          String   @id @default(uuid())
+  userAId     String
+  userBId     String
+  createdAt   DateTime @default(now())
+  userA       User     @relation("FriendshipUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB       User     @relation("FriendshipUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+}
+
+model DirectMessage {
+  id          String   @id @default(uuid())
+  senderId    String
+  receiverId  String
+  content     String
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+  sender      User     @relation("DirectMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User     @relation("DirectMessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, receiverId, createdAt])
+}
+
+model SocialNotification {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String
+  title       String
+  body        String
+  payload     Json?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+}

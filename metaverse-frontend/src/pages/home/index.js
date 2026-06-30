@@ -1,13 +1,10 @@
 import Home from "../../components/Home";
-import Header from "../../components/Header";
+import AppLayout from "../../components/layout/AppLayout";
 
-const LoginPage = () => {
-  return (
-    <>
-      <Header />
-      <Home />
-    </>
-  );
-};
+const HomePage = () => (
+  <AppLayout>
+    <Home />
+  </AppLayout>
+);
 
-export default LoginPage;
+export default HomePage;

