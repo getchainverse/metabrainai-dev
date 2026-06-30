@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
-import { API_URL } from "../config/env";
+import { API_BASE_URL } from "../config/env";
 import { BrowserProvider, parseEther } from "ethers";
+
+const API_URL = `${API_BASE_URL}/api`;
 
 export const useStore = (autoLoad = true) => {
   const [products, setProducts] = useState([]);

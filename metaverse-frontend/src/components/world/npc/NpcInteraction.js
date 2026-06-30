@@ -13,8 +13,8 @@ const NpcInteraction = ({ onInteract, chatOpen }) => {
   useFrame(() => {
     const playerPosition = scene.userData.playerPosition;
     if (!playerPosition) return;
-    const distance = npcPosition.distanceTo(new Vector3(...playerPosition));
-    setShowButton(distance < 3);
+    const distanceSq = npcPosition.distanceToSquared(playerPosition);
+    setShowButton(distanceSq < 9);
   });
 
   return (

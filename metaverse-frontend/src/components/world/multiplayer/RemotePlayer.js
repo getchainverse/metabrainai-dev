@@ -5,6 +5,8 @@ import { Html } from "@react-three/drei";
 import AvatarModel from "../avatar/AvatarModel";
 import AvatarInteractionMenu from "../ui/AvatarInteractionMenu";
 
+const tempVector = new Vector3();
+
 const tintForId = (id) => {
   let hash = 0;
   for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
@@ -36,8 +38,9 @@ const RemotePlayer = ({ player }) => {
 
   useFrame((_, delta) => {
     if (!root.current) return;
-    const next = new Vector3(...(player.position || [0, 0.95, 0]));
-    target.current.lerp(next, 0.18);
+    const pos = player.position || [0, 0.95, 0];
+    tempVector.set(pos[0], pos[1], pos[2]);
+    target.current.lerp(tempVector, 0.18);
     rotation.current = MathUtils.lerp(rotation.current, player.rotation || 0, 0.18);
 
     root.current.position.lerp(target.current, 0.18);

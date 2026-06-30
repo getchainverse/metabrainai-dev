@@ -32,18 +32,18 @@ const Player = ({ obstacles, onStateChange, customization }) => {
   useEffect(() => {
     const onKeyDown = (event) => {
       if (event.repeat) return;
-      if (event.code === "KeyW") keys.current.w = true;
-      if (event.code === "KeyA") keys.current.a = true;
-      if (event.code === "KeyS") keys.current.s = true;
-      if (event.code === "KeyD") keys.current.d = true;
+      if (event.code === "KeyW" || event.code === "ArrowUp") keys.current.w = true;
+      if (event.code === "KeyA" || event.code === "ArrowLeft") keys.current.a = true;
+      if (event.code === "KeyS" || event.code === "ArrowDown") keys.current.s = true;
+      if (event.code === "KeyD" || event.code === "ArrowRight") keys.current.d = true;
       if (event.code === "Space") keys.current.space = true;
     };
 
     const onKeyUp = (event) => {
-      if (event.code === "KeyW") keys.current.w = false;
-      if (event.code === "KeyA") keys.current.a = false;
-      if (event.code === "KeyS") keys.current.s = false;
-      if (event.code === "KeyD") keys.current.d = false;
+      if (event.code === "KeyW" || event.code === "ArrowUp") keys.current.w = false;
+      if (event.code === "KeyA" || event.code === "ArrowLeft") keys.current.a = false;
+      if (event.code === "KeyS" || event.code === "ArrowDown") keys.current.s = false;
+      if (event.code === "KeyD" || event.code === "ArrowRight") keys.current.d = false;
       if (event.code === "Space") keys.current.space = false;
     };
 
@@ -96,8 +96,10 @@ const Player = ({ obstacles, onStateChange, customization }) => {
       setJumping(false);
     }
 
-    state.scene.userData.playerPosition = current.clone();
-
+    if (!state.scene.userData.playerPosition) {
+      state.scene.userData.playerPosition = new Vector3();
+    }
+    state.scene.userData.playerPosition.copy(current);
     animation.current =
       jumping || current.y > groundY + 0.02
         ? "jump"

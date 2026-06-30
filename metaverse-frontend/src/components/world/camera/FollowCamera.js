@@ -2,6 +2,11 @@ import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
 
+const dynamicOffset = new Vector3();
+const lookAtOffset = new Vector3(0, 1.2, 0);
+const targetTemp = new Vector3();
+const lookAtTemp = new Vector3();
+
 const FollowCamera = () => {
   const { camera, scene, gl } = useThree();
   const target = useRef(new Vector3());
@@ -82,9 +87,12 @@ const FollowCamera = () => {
     const z = radius * Math.cos(theta.current) * Math.cos(phi.current);
     const y = radius * Math.sin(phi.current) + 1.2;
 
-    const dynamicOffset = new Vector3(x, y, z);
-    camera.position.lerp(target.current.clone().add(dynamicOffset), 0.15);
-    camera.lookAt(target.current.clone().add(new Vector3(0, 1.2, 0)));
+    dynamicOffset.set(x, y, z);
+    targetTemp.copy(target.current).add(dynamicOffset);
+    camera.position.lerp(targetTemp, 0.15);
+    
+    lookAtTemp.copy(target.current).add(lookAtOffset);
+    camera.lookAt(lookAtTemp);
   });
 
   return null;

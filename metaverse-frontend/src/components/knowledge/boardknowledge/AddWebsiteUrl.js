@@ -14,7 +14,6 @@ const AddWebsiteUrl = ({ showModal, setShowModal }) => {
   const CheckboxGroup = Checkbox.Group;
   const [checkedList, setCheckedList] = useState(defaultCheckedList);
   const [checkAll, setCheckAll] = useState(false);
-  const [permission, setPermission] = useState([]);
   const [indeterminate, setIndeterminate] = useState(true);
   const [checkedRoles, setCheckedRoles] = useState(["sales"]);
   const plainOptions = ["Level 1", "Sales", "Manager", "V.P"];
