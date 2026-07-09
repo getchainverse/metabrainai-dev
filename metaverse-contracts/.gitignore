@@ -1,0 +1,8 @@
+# Foundry
+out/
+cache/
+broadcast/
+
+# Env
+.env
+.env.*

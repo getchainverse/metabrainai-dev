@@ -1,0 +1,19 @@
+# AI tooling — never commit any of this
+CLAUDE.md
+.claude/
+.cursor/
+.cursorrules
+.aider*
+.github/copilot-instructions.md
+**/*.ai.md
+
+# Env & secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Dependencies / build
+node_modules/
+dist/
+build/
