@@ -22,13 +22,14 @@ const Reset = ({ id, token }) => {
   };
 
   const decodedJwt = parseJwt(userToken);
-  const expiredTime = decodedJwt.iat;
+  const expiredTime = decodedJwt?.iat;
 
   const onFinish = (value) => {
     const data = {
       userId: userId,
       userPassword: value.password,
       expiredTime: expiredTime,
+      token: userToken,
     };
     AuthService.resetPasswordByUser(data).then(
       (response) => {
