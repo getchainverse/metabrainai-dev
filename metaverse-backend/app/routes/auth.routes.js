@@ -1,4 +1,5 @@
-const { verifySignUp } = require("../middleware");
+const { verifySignUp, authJwt } = require("../middleware");
+const { authLimiter } = require("../middleware/rateLimit");
 const controller = require("../controllers/auth.controller");
 
 module.exports = function (app) {
@@ -10,24 +11,37 @@ module.exports = function (app) {
   app.post(
     "/api/auth/signup",
     [
+      authLimiter,
       verifySignUp.checkDuplicateUsernameOrEmail,
       verifySignUp.checkRolesExisted,
     ],
     controller.signup
   );
 
-  app.post("/api/auth/signin", controller.signin);
+  app.post("/api/auth/signin", [authLimiter], controller.signin);
 
   app.post("/api/auth/signout", controller.signout);
 
-  app.post("/api/auth/sendmail", controller.sendMail);
+  app.post("/api/auth/sendmail", [authLimiter], controller.sendMail);
 
-  app.post("/api/auth/resetpasswordbyuser", controller.resetPasswordByUser);
+  app.post(
+    "/api/auth/resetpasswordbyuser",
+    [authLimiter],
+    controller.resetPasswordByUser
+  );
 
   app.post("/api/auth/getlastexpiredtime", controller.getLastExpiredTime);
 
-  app.post("/api/auth/setrolebyuser", controller.setRoleByUser);
+  app.post(
+    "/api/auth/setrolebyuser",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    controller.setRoleByUser
+  );
 
-  app.get("/api/auth/getalluserdata", controller.getAllUserData);
+  app.get(
+    "/api/auth/getalluserdata",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    controller.getAllUserData
+  );
 
 };

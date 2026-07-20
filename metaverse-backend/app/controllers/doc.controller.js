@@ -5,12 +5,13 @@ const fs = require("fs");
 const dotenv = require("dotenv");
 const { ChromaClient } = require("chromadb");
 const { PineconeClient } = require("@pinecone-database/pinecone");
-const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
-const { Chroma } = require("langchain/vectorstores/chroma");
-const { PineconeStore } = require("langchain/vectorstores/pinecone");
-const { PDFLoader } = require("langchain/document_loaders/fs/pdf");
-const { DocxLoader } = require("langchain/document_loaders/fs/docx");
-
+// NOTE: langchain imports removed — package is not installed and the loaders/
+// splitters below are only referenced by inactive (commented-out) code paths.
+// const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
+// const { Chroma } = require("langchain/vectorstores/chroma");
+// const { PineconeStore } = require("langchain/vectorstores/pinecone");
+// const { PDFLoader } = require("langchain/document_loaders/fs/pdf");
+// const { DocxLoader } = require("langchain/document_loaders/fs/docx");
 // const { pipeline, env } = require("@xenova/transformers");
 const User = db.user;
 const Doc = db.doc;

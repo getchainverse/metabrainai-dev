@@ -4,7 +4,17 @@ const db = require("../models");
 const User = db.user;
 
 verifyToken = (req, res, next) => {
-  let token = req.session.token;
+  // Prefer the Authorization header (Bearer token) used by the frontend,
+  // then fall back to x-access-token and the cookie session.
+  let token = req.headers["x-access-token"] || req.headers["authorization"];
+
+  if (token && token.startsWith("Bearer ")) {
+    token = token.slice(7);
+  }
+
+  if (!token && req.session) {
+    token = req.session.token;
+  }
 
   if (!token) {
     return res.status(403).send({

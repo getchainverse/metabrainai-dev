@@ -4,8 +4,6 @@ const cors = require("cors");
 
 const cookieSession = require("cookie-session");
 
-const sqls = require("@sqlite-frame/nodesql");
-
 require("dotenv").config();
 
 const app = express();
@@ -25,12 +23,21 @@ app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
+const isProduction = process.env.NODE_ENV === "production";
+
+// Trust the first proxy hop so client IPs are correct for rate limiting
+// and so secure cookies work behind a TLS-terminating proxy.
+if (isProduction) {
+  app.set("trust proxy", 1);
+}
+
 app.use(
   cookieSession({
     name: "bezkoder-session",
-    keys: ["COOKIE_SECRET"], // should use as secret environment variable
+    keys: [process.env.COOKIE_SECRET || "dev-only-insecure-cookie-change-me"],
     httpOnly: true,
     sameSite: "strict",
+    secure: isProduction, // require HTTPS for the session cookie in production
   })
 );
 
@@ -55,6 +62,7 @@ app.get("/", (req, res) => {
 // routes
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
+require("./app/routes/doc.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 3001;

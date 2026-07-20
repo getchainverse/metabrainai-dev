@@ -38,6 +38,10 @@ const Header = () => {
     setCurrentUser(undefined);
   };
 
+  const openModal = () => {
+    setIsVisible(true);
+  };
+
 
   useEffect(() => {
     const user = AuthService.getCurrentUser();
